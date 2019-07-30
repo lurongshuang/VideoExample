@@ -109,35 +109,35 @@ public class MainActivity extends AppCompatActivity implements PlayInterface {
      */
     private void  SetonConfigurationChanged(int type) {
         if(type == 1) {
-            fullscreen(true);
+//            fullscreen(true);
             android.view.ViewGroup.LayoutParams pp =rlwin.getLayoutParams();
             withnumber = pp.height;
             pp.height = RelativeLayout.LayoutParams.MATCH_PARENT;
             pp.width = RelativeLayout.LayoutParams.MATCH_PARENT;
             rlwin.setLayoutParams(pp);
         }else {
-            fullscreen(false);
+//            fullscreen(false);
             android.view.ViewGroup.LayoutParams pp =rlwin.getLayoutParams();
             pp.height = withnumber;
             pp.width = RelativeLayout.LayoutParams.MATCH_PARENT;
             rlwin.setLayoutParams(pp);
         }
     }
-    //状态栏操作
-    private void fullscreen(boolean enable) {
-        if (enable) { //显示状态栏
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-            getWindow().setAttributes(lp);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-
-        } else { //隐藏状态栏
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().setAttributes(lp);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        }
- }
+//    //状态栏操作
+//    private void fullscreen(boolean enable) {
+//        if (enable) { //显示状态栏
+//            WindowManager.LayoutParams lp = getWindow().getAttributes();
+//            lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+//            getWindow().setAttributes(lp);
+//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//
+//        } else { //隐藏状态栏
+//            WindowManager.LayoutParams lp = getWindow().getAttributes();
+//            lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//            getWindow().setAttributes(lp);
+//            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//        }
+//    }
 
     @Override
     public void onVideoRationChanged() {

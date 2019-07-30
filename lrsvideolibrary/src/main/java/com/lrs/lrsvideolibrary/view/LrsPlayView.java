@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -250,6 +251,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 if (showProgress) {
                     ll_progress.setVisibility(View.VISIBLE);
                     ll_progress.setTag(R.id.showState, true);
+                    fullscreen(((Activity)getContext()),false);
                 }
                 playInterface.onVideoStart();
                 countDownGone();
@@ -372,6 +374,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
             if (showProgress) {
                 ll_progress.setVisibility(View.GONE);
                 ll_progress.setTag(R.id.showState, false);
+                fullscreen(((Activity)getContext()),true);
             }
             ivlock.setVisibility(View.GONE);
             ivlock.setTag(R.id.showState, false);
@@ -379,6 +382,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
             if (showProgress) {
                 ll_progress.setVisibility(View.VISIBLE);
                 ll_progress.setTag(R.id.showState, true);
+                fullscreen(((Activity)getContext()),false);
             }
             countDownGone();
         }
@@ -500,7 +504,42 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
             ((ImageView) view).setImageResource(R.drawable.ic_video_pause);
         }
     }
+    private void fullscreen(Activity activity ,boolean enable) {
+        if (enable) { //隐藏状态栏
+            WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+            lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            activity.getWindow().setAttributes(lp);
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
+            //隐藏虚拟按键
+            if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+                View v = activity.getWindow().getDecorView();
+                v.setSystemUiVisibility(View.GONE);
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                View decorView = activity.getWindow().getDecorView();
+                int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
+            }
+
+        } else { //显示状态栏
+            WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+            lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            activity.getWindow().setAttributes(lp);
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            //显示虚拟按键
+            if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+                //低版本sdk
+                View v = activity.getWindow().getDecorView();
+                v.setSystemUiVisibility(View.VISIBLE);
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                View decorView = activity.getWindow().getDecorView();
+                int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+                decorView.setSystemUiVisibility(uiOptions);
+            }
+        }
+    }
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.iv_playstate) {
@@ -513,12 +552,14 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 ivlock.setTag(R.id.showState, false);
                 showProgress = true;
                 iv_playhorizontal.setImageResource(R.drawable.ic_video_horizontal);
+                fullscreen(((Activity)getContext()),false);
             } else if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
                 //如果屏幕当前是竖屏显示，则设置屏幕锁死为横屏显示
                 ivlock.setVisibility(View.VISIBLE);
                 ivlock.setTag(R.id.showState, true);
 //                showProgress = false;
                 iv_playhorizontal.setImageResource(R.drawable.ic_video_vertical);
+                fullscreen(((Activity)getContext()),true);
             }
         } else if (view.getId() == R.id.ivlock) {
             boolean isshow = (boolean) ivlock.getTag();
@@ -529,12 +570,14 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 ivlock.setImageResource(R.drawable.ic_lockunblock);
                 ll_progress.setVisibility(View.GONE);
                 ll_progress.setTag(R.id.showState, false);
+                fullscreen(((Activity)getContext()),true);
             } else {
                 showProgress = true;
                 view.setTag(true);
                 ivlock.setImageResource(R.drawable.ic_videolock);
                 ll_progress.setVisibility(View.VISIBLE);
                 ll_progress.setTag(R.id.showState, true);
+                fullscreen(((Activity)getContext()),false);
             }
 
 
@@ -554,6 +597,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                             if (showProgress) {
                                 ll_progress.setVisibility(View.GONE);
                                 ll_progress.setTag(R.id.showState, false);
+                                fullscreen(((Activity)getContext()),true);
                             }
                             ivlock.setVisibility(View.GONE);
                             ivlock.setTag(R.id.showState, false);
