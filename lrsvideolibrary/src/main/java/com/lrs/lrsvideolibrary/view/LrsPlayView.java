@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -27,6 +28,7 @@ import com.lrs.lrsvideolibrary.view.vide_interface.PlayInterface;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
 public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideListener, View.OnClickListener {
     //播放图层
     BaseView playTextureView;
@@ -70,6 +72,11 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
     //屏幕亮度
     TextView tvBrightness;
 
+    //锁屏anniu
+    ImageView ivlock;
+    //是否显示进度
+    private static boolean showProgress = true;
+
     /**
      * 设置监听动作
      *
@@ -103,17 +110,21 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
         playTextureView = findViewById(R.id.playTextureView);
         rlwindow = findViewById(R.id.rlwindow);
         pb_loading = findViewById(R.id.pb_loading);
-        videoTouchView =  findViewById(R.id.videoTouchView);
+        videoTouchView = findViewById(R.id.videoTouchView);
         rl_change_progress = findViewById(R.id.rl_change_progress);
         iv_change_progress = findViewById(R.id.iv_change_progress);
-        tv_change_progress=  findViewById(R.id.tv_change_progress);
+        tv_change_progress = findViewById(R.id.tv_change_progress);
         ll_progress = findViewById(R.id.ll_progress);
-        pb_progress =  findViewById(R.id.pb_progress);
+        pb_progress = findViewById(R.id.pb_progress);
         tv_pro = findViewById(R.id.tv_pro);
         tv_play_total = findViewById(R.id.tv_play_total);
         iv_playstate = findViewById(R.id.iv_playstate);
-        iv_playhorizontal =  findViewById(R.id.iv_playhorizontal);
+        iv_playhorizontal = findViewById(R.id.iv_playhorizontal);
         tvBrightness = findViewById(R.id.tvBrightness);
+        ivlock = findViewById(R.id.ivlock);
+        ivlock.setImageResource(R.drawable.ic_videolock);
+        ivlock.setTag(true);
+        ivlock.setOnClickListener(this);
 
 
         //透明度
@@ -187,6 +198,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     /**
      * 视频宽度
+     *
      * @return
      */
     public int getVideoWidth() {
@@ -198,6 +210,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     /**
      * 视频高度
+     *
      * @return
      */
     public int getVideoHeight() {
@@ -217,13 +230,14 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     /**
      * 是否正在播放
+     *
      * @return
      */
-    public  boolean getIsPlaying(){
-        if(mMediaPlayerTool!=null) {
+    public boolean getIsPlaying() {
+        if (mMediaPlayerTool != null) {
             return mMediaPlayerTool.isPlaying();
         }
-        return  false;
+        return false;
     }
 
     private void playVideo() {
@@ -234,10 +248,12 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 pb_loading.setVisibility(View.GONE);
                 playTextureView.setVideoSize(mMediaPlayerTool.getVideoWidth(), mMediaPlayerTool.getVideoHeight());
                 iv_playstate.setTag(R.id.playState, true);
-                ll_progress.setVisibility(View.VISIBLE);
-                ll_progress.setTag(R.id.showState, true);
-                countDownGone();
+                if (showProgress) {
+                    ll_progress.setVisibility(View.VISIBLE);
+                    ll_progress.setTag(R.id.showState, true);
+                }
                 playInterface.onVideoStart();
+                countDownGone();
             }
 
             @Override
@@ -311,6 +327,9 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
     //进度滑动监听
     @Override
     public void onSlide(float distant) {
+        if (!showProgress) {
+            return;
+        }
         if (mMediaPlayerTool == null) {
             return;
         }
@@ -325,6 +344,9 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
     public void onUp(int index) {
         switch (index) {
             case 1:
+                if (!showProgress) {
+                    return;
+                }
                 if (rl_change_progress.isShown()) {
                     rl_change_progress.setVisibility(View.GONE);
                 }
@@ -332,6 +354,9 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 break;
             case 2:
             case 3:
+                if (!showProgress) {
+                    return;
+                }
                 tvBrightness.setVisibility(View.GONE);
                 break;
         }
@@ -340,12 +365,19 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
     @Override
     public void onClick() {
         boolean isshow = (boolean) ll_progress.getTag(R.id.showState);
-        if (isshow) {
-            ll_progress.setVisibility(View.GONE);
-            ll_progress.setTag(R.id.showState, false);
+        boolean isshow2 = (boolean) ivlock.getTag(R.id.showState);
+        if (isshow || isshow2) {
+            if (showProgress) {
+                ll_progress.setVisibility(View.GONE);
+                ll_progress.setTag(R.id.showState, false);
+            }
+            ivlock.setVisibility(View.GONE);
+            ivlock.setTag(R.id.showState, false);
         } else {
-            ll_progress.setVisibility(View.VISIBLE);
-            ll_progress.setTag(R.id.showState, true);
+            if (showProgress) {
+                ll_progress.setVisibility(View.VISIBLE);
+                ll_progress.setTag(R.id.showState, true);
+            }
             countDownGone();
         }
     }
@@ -365,11 +397,14 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     @Override
     public void onBrightnessSlide(float percent) {
+        if (!showProgress) {
+            return;
+        }
         //减少调用次数 滑动坐标增长3调用一次
         if (((int) percent) % 3 == 0) {
             float now = getScreenBrightness(((Activity) getContext()));
             float br = 0;
-            if (percent > 0) {
+            if (percent < 0) {
                 br = now + 10;
             } else {
                 br = now - 10;
@@ -408,44 +443,50 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     @Override
     public void onVolumeSlide(float Slide) {
+        if (!showProgress) {
+            return;
+        }
         //减少调用次数 滑动坐标增长3调用一次
+        Log.e("Slide", Slide + "");
         if (((int) Slide) % 3 == 0) {
-            float cu =getslide(((Activity) getContext()));
+            float cu = getslide(((Activity) getContext()));
             float to = getSlideMax(((Activity) getContext()));
             int br;
             if (Slide > 0) {
-                br = AudioManager.ADJUST_RAISE;
-            } else {
                 br = AudioManager.ADJUST_LOWER;
+            } else {
+                br = AudioManager.ADJUST_RAISE;
             }
             tvBrightness.setVisibility(View.VISIBLE);
-            float a = ( cu/ to);
+            float a = (cu / to);
             int b = (int) (a * 100);
             tvBrightness.setText("当前声音 " + b + "%");
             setSlide(((Activity) getContext()), br);
         }
     }
 
-    public  void pause(){
+    public void pause() {
         changePlayState(iv_playstate);
-        if(mMediaPlayerTool!=null) {
+        if (mMediaPlayerTool != null) {
             mMediaPlayerTool.pause();
         }
     }
-    public  void stop(){
+
+    public void stop() {
         changePlayState(iv_playstate);
-        if(mMediaPlayerTool!=null) {
+        if (mMediaPlayerTool != null) {
             mMediaPlayerTool.stop();
         }
     }
-    public void start(){
+
+    public void start() {
         changePlayState(iv_playstate);
-        if(mMediaPlayerTool != null){
+        if (mMediaPlayerTool != null) {
             mMediaPlayerTool.start();
         }
     }
 
-    public  void changePlayState(View view){
+    public void changePlayState(View view) {
         boolean isplay = (boolean) view.getTag(R.id.playState);
         if (isplay) {
             mMediaPlayerTool.pause();
@@ -457,35 +498,45 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
             ((ImageView) view).setImageResource(R.drawable.ic_video_pause);
         }
     }
+
     @Override
     public void onClick(View view) {
-        if(view.getId() ==  R.id.iv_playstate) {
+        if (view.getId() == R.id.iv_playstate) {
             changePlayState(view);
-        }else if(view.getId() ==  R.id.iv_playhorizontal){
+        } else if (view.getId() == R.id.iv_playhorizontal) {
             playInterface.onVideoRationChanged();
             int currentOrientation = getResources().getConfiguration().orientation;
             if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                ivlock.setVisibility(View.GONE);
+                ivlock.setTag(R.id.showState, false);
+                showProgress = true;
                 iv_playhorizontal.setImageResource(R.drawable.ic_video_horizontal);
             } else if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
                 //如果屏幕当前是竖屏显示，则设置屏幕锁死为横屏显示
+                ivlock.setVisibility(View.VISIBLE);
+                ivlock.setTag(R.id.showState, true);
+//                showProgress = false;
                 iv_playhorizontal.setImageResource(R.drawable.ic_video_vertical);
             }
+        } else if (view.getId() == R.id.ivlock) {
+            boolean isshow = (boolean) ivlock.getTag();
+            if (isshow) {
+                //变为false
+                showProgress = false;
+                view.setTag(false);
+                ivlock.setImageResource(R.drawable.ic_lockunblock);
+                ll_progress.setVisibility(View.GONE);
+                ll_progress.setTag(R.id.showState, false);
+            } else {
+                showProgress = true;
+                view.setTag(true);
+                ivlock.setImageResource(R.drawable.ic_videolock);
+                ll_progress.setVisibility(View.VISIBLE);
+                ll_progress.setTag(R.id.showState, true);
+            }
+
+
         }
-//        switch (view.getId()) {
-//            case R.id.iv_playstate:
-//                changePlayState(view);
-//                break;
-//            case R.id.iv_playhorizontal:
-//                playInterface.onVideoRationChanged();
-//                int currentOrientation = getResources().getConfiguration().orientation;
-//                if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-//                    iv_playhorizontal.setImageResource(R.drawable.ic_video_horizontal);
-//                } else if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
-//                    //如果屏幕当前是竖屏显示，则设置屏幕锁死为横屏显示
-//                    iv_playhorizontal.setImageResource(R.drawable.ic_video_vertical);
-//                }
-//                break;
-//        }
     }
 
     TimerTask task = null;
@@ -498,8 +549,12 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
                 public void handleMessage(Message message) {
                     switch (message.what) {
                         case 200:
-                            ll_progress.setVisibility(View.GONE);
-                            ll_progress.setTag(R.id.showState, false);
+                            if (showProgress) {
+                                ll_progress.setVisibility(View.GONE);
+                                ll_progress.setTag(R.id.showState, false);
+                            }
+                            ivlock.setVisibility(View.GONE);
+                            ivlock.setTag(R.id.showState, false);
                             break;
                     }
                 }
@@ -509,6 +564,15 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     public void countDownGone() {
         isHandler();
+        int currentOrientation = getResources().getConfiguration().orientation;
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            ivlock.setVisibility(View.VISIBLE);
+            ivlock.setTag(R.id.showState, true);
+        } else {
+            ivlock.setVisibility(View.GONE);
+            ivlock.setTag(R.id.showState, false);
+        }
+        float i = mMediaPlayerTool.getRotation();
         if (task == null) {
             task = new TimerTask() {
                 @Override

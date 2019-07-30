@@ -61,29 +61,35 @@ public class TouchView extends FrameLayout {
                     float slideX = moveX - downX;
                     float slideY = moveY - downY;
 
-                    if (downX >= getWidth() * 0.5) {
-                        //手指在右侧
-                        if (slideY > 50 || slideY < -50) {
-                            isRight = true;
-                            onTouchSlideListener.onBrightnessSlide(downY-moveY);
-                        }
-                    } else {
-                        //手指在左側
-                        if (slideY > 50 || slideY < -50) {
-                            isLeft = true;
-                            onTouchSlideListener.onVolumeSlide(downY-moveY);
-                        }
-                    }
-                    if (isSlideing) {
-                        onTouchSlideListener.onSlide(slideX);
-                        downX = moveX;
-                    } else {
+                    if(isSlideing || isRight || isLeft) {
                         if (Math.abs(slideX) > slideMove && !dontSlide) {
                             requestDisallowInterceptTouchEvents(this, true);
-                            isSlideing = true;
                             downX = moveX;
-                        } else if (Math.abs(slideY) > slideMove) {
-                            dontSlide = true;
+                        }
+                        if (isSlideing) {
+                            onTouchSlideListener.onSlide(slideX);
+                            downX = moveX;
+                        } else if (isLeft) {
+                            onTouchSlideListener.onVolumeSlide(slideY);
+//                            downY = moveY;
+                        } else if (isRight) {
+                            onTouchSlideListener.onBrightnessSlide(slideY);
+//                            downY = moveY;
+                        }
+                    }else {
+                        //判断 x轴变化
+                        if (downX - moveX > 20 || moveX - downX > 20) {
+                            //横向滑动
+                            isSlideing = true;
+                        } else if (downY - moveY > 20 || moveY - downY > 20) {
+                            //上下滑动
+                            if (downX >= getWidth() * 0.5) {
+                                //在右侧滑动
+                                isRight = true;
+                            } else {
+                                //在左侧滑动
+                                isLeft = true;
+                            }
                         }
                     }
                 }
@@ -91,16 +97,15 @@ public class TouchView extends FrameLayout {
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 requestDisallowInterceptTouchEvents(this, false);
-                if(isRight){
+                if (isRight) {
                     if (onTouchSlideListener != null) {
                         onTouchSlideListener.onUp(2);
                     }
-                }else if(isLeft){
+                } else if (isLeft) {
                     if (onTouchSlideListener != null) {
                         onTouchSlideListener.onUp(3);
                     }
-                }
-                else if (isSlideing) {
+                } else if (isSlideing) {
                     if (onTouchSlideListener != null) {
                         onTouchSlideListener.onUp(1);
                     }
@@ -117,8 +122,8 @@ public class TouchView extends FrameLayout {
                 }
                 isSlideing = false;
                 dontSlide = false;
-                isLeft =false;
-                isRight =false;
+                isLeft = false;
+                isRight = false;
                 break;
         }
         return true;
@@ -137,7 +142,8 @@ public class TouchView extends FrameLayout {
 
     public interface OnTouchSlideListener {
         void onSlide(float distant);
-            //1快进，2 left 3 right
+
+        //1快进，2 left 3 right
         void onUp(int index);
 
         void onClick();
