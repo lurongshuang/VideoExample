@@ -7,6 +7,7 @@ import android.Manifest;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements PlayInterface {
         //播放地址
         lrsPlayView.setVideoURL("https://vd4.bdstatic.com/mda-ij3q3bd7cassmnsc/sc/mda-ij3q3bd7cassmnsc.mp4");
         //静音
-        lrsPlayView.setVolume(1);
+        lrsPlayView.setVolume(0);
         //循环播放
         lrsPlayView.setLooping(true);
         lrsPlayView.prepare();
@@ -54,6 +55,19 @@ public class MainActivity extends AppCompatActivity implements PlayInterface {
         if(lrsPlayView!=null && !lrsPlayView.getIsPlaying()) {
             lrsPlayView.start();
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            int currentOrientation = getResources().getConfiguration().orientation;
+            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                SetonConfigurationChanged(2);
+                return  true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     //权限获取
