@@ -31,6 +31,7 @@
         android:layout_weight="1"
         android:textColor="@color/colorffffff"
         />
+    <!--<SeekBar-->
     <ProgressBar
         android:id="@+id/pb_progress"
         android:layout_gravity="center_vertical"

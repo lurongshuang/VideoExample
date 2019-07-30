@@ -2,6 +2,7 @@ package com.lrs.lrsvideolibrary.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -67,7 +68,9 @@ public class TouchView extends FrameLayout {
                             downX = moveX;
                         }
                         if (isSlideing) {
-                            onTouchSlideListener.onSlide(slideX);
+                            if(slideX<5) {
+                                onTouchSlideListener.onSlide(slideX);
+                            }
                             downX = moveX;
                         } else if (isLeft) {
                             onTouchSlideListener.onVolumeSlide(slideY);

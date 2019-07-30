@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.lrs.lrsvideolibrary.R;
@@ -29,7 +30,7 @@ import com.lrs.lrsvideolibrary.view.vide_interface.PlayInterface;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideListener, View.OnClickListener {
+public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideListener, View.OnClickListener{
     //播放图层
     BaseView playTextureView;
     //播放con
@@ -74,7 +75,7 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     //锁屏anniu
     ImageView ivlock;
-    //是否显示进度
+    //是否显示进度 操作收拾是否可用等
     private static boolean showProgress = true;
 
     /**
@@ -125,8 +126,6 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
         ivlock.setImageResource(R.drawable.ic_videolock);
         ivlock.setTag(true);
         ivlock.setOnClickListener(this);
-
-
         //透明度
         ll_progress.setAlpha(0.8f);
         iv_playstate.setOnClickListener(this);
@@ -300,6 +299,9 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
 
     private void changeProgressText(RelativeLayout pb_play_progress, float distant) {
         float radio = distant / pb_play_progress.getWidth();
+        if(radio == Float.POSITIVE_INFINITY) {
+            return;
+        }
         changeProgressTime += mMediaPlayerTool.getDuration() * radio;
         if (changeProgressTime < 0) {
             changeProgressTime = 0;
@@ -594,4 +596,5 @@ public class LrsPlayView extends FrameLayout implements TouchView.OnTouchSlideLi
     public void setCountDown(int CountDown) {
         this.CountDown = CountDown;
     }
+
 }
